@@ -40,8 +40,9 @@ let game = [];
 // WebSockets
 io.on('connection', socket => {
 
-  // on connect
+  // Send initial data to client
   console.log(`${socket.id}: connected`);
+  socket.emit('init', { game });
 
   socket.on('disconnect', data => {
     console.log(`${socket.id}: disconnected`);

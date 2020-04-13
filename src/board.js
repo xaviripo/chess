@@ -1,6 +1,6 @@
 const Square = require('./square');
 const { King, Queen, Rook, Bishop, Knight, Pawn } = require('./pieces/pieces');
-const { COLS, ROWS, shareRow, shareCol, shareDiagonal } = require('./coords');
+const { COLS, ROWS, manhattanDistance, shareRow, shareCol, shareDiagonal } = require('./coords');
 const { Teams } = require('./teams');
 
 class Board {
@@ -13,6 +13,20 @@ class Board {
   move(from, to) {
     const piece = this.getSquareByCoords(from).piece;
     if (!piece) throw new Error(`There's no piece in coords ${from}`);
+
+    // Castling
+    if (piece instanceof King && shareRow(from, to) && manhattanDistance(from, to) === 2) {
+      // TODO in the future, refactor this so that piece.canMove already
+      // returns all the pieces to move
+      const rook = piece.getCastlingRook(to);
+      rook.square.piece = null;
+      this.getSquareByCoords([
+        COLS[COLS.indexOf(to[0]) + (to[0] > from[0] ? -1 : +1)],
+        to[1],
+      ]).piece = rook; 
+      rook.virgin = false;
+    }
+
     this.getSquareByCoords(from).piece = null;
     this.getSquareByCoords(to).piece = piece;
 

@@ -13,6 +13,7 @@ Main entry point for the server.
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
+const cors = require('cors');
 
 // Iternal
 const { Game } = require('./game');
@@ -32,6 +33,7 @@ const PORT = process.env.PORT || 3001;
 /******************************************************************************/
 
 const app = express();
+app.use(cors());
 const server = http.Server(app);
 
 server.listen(PORT, () => {

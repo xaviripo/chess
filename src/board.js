@@ -1,5 +1,5 @@
 const Square = require('./square');
-const { King, Queen, Rook, Bishop, Knight, Pawn } = require('./pieces');
+const { King, Queen, Rook, Bishop, Knight, Pawn } = require('./pieces/pieces');
 const { COLS, ROWS, shareRow, shareCol, shareDiagonal } = require('./coords');
 const { Teams } = require('./teams');
 

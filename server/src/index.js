@@ -17,6 +17,7 @@ const socketIO = require('socket.io');
 // Iternal
 const { Game } = require('./game');
 const { Teams } = require('./teams');
+const Player = require('./player');
 
 
 /******************************************************************************/
@@ -41,37 +42,55 @@ const io = socketIO(server);
 
 
 
+/******************************************************************************/
+// Managing messages and state
+/******************************************************************************/
 
+let games = [];
+let sockets = [];
 
-class Player {
-  constructor(socket) {
-    this._socket = socket;
+const getGamePlayerBySocket = (socket) => {
+  for (const game of games) {
+    for (const player of game.players) {
+      if (player.socket === socket) {
+        return [game, player];
+      }
+    }
   }
-
-  get socket() {
-    return this._socket;
-  }
-
-  get id() {
-    return this._socket.id;
-  }
-
-  get team() {
-    return this._team;
-  }
-
-  set team(team) {
-    this._team = team;
-  }
-
-  get game() {
-    return this._game;
-  }
-
-  set game(game) {
-    this._game = game;
-  }
+  return null;
 }
+
+const enter = (socket) => {
+
+  const player = new Player(socket);
+
+  const playingSockets = [].concat(...games.map(game => game.players.map(player => player.socket)));
+  const waitingSocket = sockets.find(
+    socket => !playingSockets.includes(socket) && socket !== player.socket
+  );
+
+  // If everybody is already in a game, wait for somebody else to enter
+  if (!waitingSocket) {
+
+    // Send initial data to client
+    player.socket.emit('init', {});
+    return;
+
+  }
+
+  const playerA = new Player(waitingSocket);
+  const playerB = player;
+
+  console.log(`playing game between ${playerA.id.substr(playerA.id.length-1)} and ${playerB.id.substr(playerB.id.length-1)}`);
+
+  let game = new Game(playerA, playerB);
+  games.push(game);
+
+  for (const player of [playerA, playerB]) {
+    send(player, 'accepted', { scene: game.board.serialized });
+  }
+
+};
 
 const send = (player, name, data) => {
 
@@ -91,11 +110,14 @@ const send = (player, name, data) => {
 
 }
 
-const disconnectHandler = player => () => {
+const disconnectHandler = socket => () => {
 
-  console.log(`${player.socket.id}: disconnected`);
+  console.log(`${socket.id.substr(socket.id.length-1)}: disconnected`);
 
-  const game = player.game;
+  // Remove player from list
+  sockets = sockets.filter(s => s !== socket);
+
+  const [ game, player ] = getGamePlayerBySocket(socket);
 
   // If they're not playing any game, just quit.
   if (!game) {
@@ -106,19 +128,18 @@ const disconnectHandler = player => () => {
   const otherPlayer = game.players
     .find(otherPlayer => otherPlayer !== player);
 
+  // Remove game from list
   games = games.filter(g => g !== game);
 
-  // TODO this isn't really what we want.
-  // if there is another player waiting, then they both
-  // will stay waiting instead of being matched.
-  otherPlayer.game = null;
-  otherPlayer.socket.emit('init', {});
+  enter(otherPlayer.socket);
+  // otherPlayer.game = null;
+  // otherPlayer.socket.emit('init', {});
 
 };
 
-const actionHandler = player => data => {
+const actionHandler = socket => data => {
 
-  const game = player.game;
+  const [ game, player ] = getGamePlayerBySocket(socket);
 
   // This shouldn't happen. But... better safe than sorry
   if (!game) {
@@ -137,41 +158,17 @@ const actionHandler = player => data => {
 
 };
 
-let games = [];
-let players = [];
-
 // WebSockets
 io.on('connection', socket => {
 
-  console.log(`${socket.id}: connected`);
+  console.log(`${socket.id.substr(socket.id.length-1)}: connected`);
+  sockets.push(socket);
 
-  // Send initial data to client
-  socket.emit('init', {});
+  // Register ALL handlers here.
+  // Handlers should be registered once and globally upon socket connection.
+  socket.on('disconnect', disconnectHandler(socket));
+  socket.on('action', actionHandler(socket));
 
-  const player = new Player(socket);
-
-  socket.on('disconnect', disconnectHandler(player));
-  socket.on('action', actionHandler(player));
-
-  const waiting = players.find(player => !player.game);
-
-  players.push(player);
-
-  // If everybody is already in a game, wait for somebody else to enter
-  if (!waiting) {
-    return;
-  }
-
-  const playerA = waiting;
-  const playerB = player;
-
-  console.log(`playing game between ${playerA.id} and ${playerB.id}`);
-
-  let game = new Game(playerA, playerB);
-  games.push(game);
-
-  for (const player of [playerA, playerB]) {
-    send(player, 'accepted', { scene: game.board.serialized });
-  }
+  enter(socket);
 
 });

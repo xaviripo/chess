@@ -3,6 +3,7 @@
 const { COLS, ROWS } = require('./coords');
 const { Teams } = require('./teams');
 const Board = require('./board');
+const King = require('./pieces/king');
 
 class Game {
   constructor(player0, player1) {
@@ -107,12 +108,32 @@ class Game {
     this.board.move(from, to);
     this.next = this.next === Teams.WHITE ? Teams.BLACK : Teams.WHITE;
 
+    // Check for win
+    for (const team in Teams) {
+      const kingAlive = [].concat(...COLS.map(
+        col => ROWS.map(
+          row => this.board.getSquareByCoords([col, row]).piece
+        )
+      ))
+        .some(piece => piece instanceof King && piece.team === team);
+
+      if (!kingAlive) {
+        return {
+          success: true,
+          win: (team === Teams.WHITE) ? Teams.BLACK : Teams.WHITE,
+          data: {
+            scene: this.board.serialized,
+          }
+        };
+      }
+    }
+
     return {
       success: true,
       data: {
         scene: this.board.serialized,
       }
-    }
+    };
 
   }
 

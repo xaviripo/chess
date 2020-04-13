@@ -57,7 +57,7 @@ const getGamePlayerBySocket = (socket) => {
       }
     }
   }
-  return null;
+  return [null, null];
 }
 
 const enter = (socket) => {
@@ -132,8 +132,6 @@ const disconnectHandler = socket => () => {
   games = games.filter(g => g !== game);
 
   enter(otherPlayer.socket);
-  // otherPlayer.game = null;
-  // otherPlayer.socket.emit('init', {});
 
 };
 
@@ -147,6 +145,15 @@ const actionHandler = socket => data => {
   }
 
   const response = game.process(player, data);
+
+  if (response.win) {
+    games = games.filter(g => g !== game);
+    // Calling enter on one of the two players is enough for both to re-enter
+    // the waiting pool and immediately match on each other
+    // The losing player will play as white
+    enter(player.socket);
+    return;
+  }
 
   if (response.success) {
     game.players.forEach(

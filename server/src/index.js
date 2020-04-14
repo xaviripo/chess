@@ -13,7 +13,6 @@ Main entry point for the server.
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
-const cors = require('cors');
 
 // Iternal
 const { Game } = require('./game');
@@ -33,8 +32,15 @@ const PORT = process.env.PORT || 3001;
 /******************************************************************************/
 
 const app = express();
-app.use(cors());
 const server = http.Server(app);
+
+app.get('/socket.io/', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Request-Method', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET');
+	res.setHeader('Access-Control-Allow-Headers', '*');
+  next();
+});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

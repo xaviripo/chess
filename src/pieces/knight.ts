@@ -1,8 +1,7 @@
-const Piece = require('./piece');
-const { manhattanDistance, shareAxis, shareDiagonal } = require('../coords');
-const { Teams } = require('../teams');
+import Piece from './piece';
+import { manhattanDistance, shareAxis, shareDiagonal } from '../coords';
 
-class Knight extends Piece {
+export default class Knight extends Piece {
 
   get points() {
     return 3;
@@ -28,5 +27,3 @@ class Knight extends Piece {
   }
 
 }
-
-module.exports = Knight;

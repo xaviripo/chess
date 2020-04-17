@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "types": [ "node", "socket.io" ],
+        "typeRoots": [ "../node_modules/@types" ]
+    }
+}

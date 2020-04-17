@@ -1,4 +1,13 @@
-class Player {
+import Team from "./teams";
+import Game from "./game";
+
+export default class Player {
+
+  // TODO find proper signature for _socket
+  _socket: any;
+  _game: Game;
+  _team: Team;
+
   constructor(socket) {
     this._socket = socket;
   }
@@ -11,7 +20,7 @@ class Player {
     return this._socket.id;
   }
 
-  get team() {
+  get team(): Team {
     return this._team;
   }
 
@@ -27,5 +36,3 @@ class Player {
     this._game = game;
   }
 }
-
-module.exports = Player;

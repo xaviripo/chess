@@ -10,14 +10,14 @@ Main entry point for the server.
 /******************************************************************************/
 
 // External
-const http = require('http');
-const express = require('express');
+import * as http from 'http';
+import express from 'express';
 const socketIO = require('socket.io');
 
 // Iternal
-const { Game } = require('./game');
-const { Teams } = require('./teams');
-const Player = require('./player');
+import Game from './game';
+import Player from './player';
+import { Socket } from 'socket.io';
 
 
 /******************************************************************************/
@@ -32,7 +32,7 @@ const PORT = process.env.PORT || 3001;
 /******************************************************************************/
 
 const app = express();
-const server = http.Server(app);
+const server = new http.Server(app);
 
 app.get('/socket.io/', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -54,10 +54,10 @@ const io = socketIO(server);
 // Managing messages and state
 /******************************************************************************/
 
-let games = [];
-let sockets = [];
+let games: Game[] = [];
+let sockets: Socket[] = [];
 
-const getGamePlayerBySocket = (socket) => {
+function getGamePlayerBySocket(socket: Socket): [Game, Player] {
   for (const game of games) {
     for (const player of game.players) {
       if (player.socket === socket) {
@@ -100,22 +100,8 @@ const enter = (socket) => {
 
 };
 
-const send = (player, name, data) => {
-
-  // Don't send .team directly as we might refactor it to a type later on
-  switch (player.team) {
-    case Teams.WHITE:
-      data.team = 'WHITE';
-      break;
-    case Teams.BLACK:
-      data.team = 'BLACK';
-      break;
-    default:
-      throw new Error(`Player has invalid team ${player.team}`);
-  }
-
-  player.socket.emit(name, data);
-
+const send = (player: Player, name, data) => {
+  player.socket.emit(name, { ...data, team: player.team });
 }
 
 const disconnectHandler = socket => () => {
@@ -133,7 +119,7 @@ const disconnectHandler = socket => () => {
   }
 
   // The player who's now playing alone
-  const otherPlayer = game.players
+  const otherPlayer: Player = game.players
     .find(otherPlayer => otherPlayer !== player);
 
   // Remove game from list

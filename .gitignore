@@ -1,3 +1,7 @@
+## Project specific
+# TypeScript output
+/build/
+
 ## https://github.com/github/gitignore/blob/master/Node.gitignore
 # Logs
 logs

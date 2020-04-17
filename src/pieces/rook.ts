@@ -1,20 +1,19 @@
-const Piece = require('./piece');
-const { shareAxis, shareDiagonal } = require('../coords');
-const { Teams } = require('../teams');
+import Piece from'./piece';
+import { shareAxis } from '../coords';
 
-class Queen extends Piece {
+export default class Rook extends Piece {
 
   get points() {
-    return 9;
+    return 5;
   }
 
   get name() {
-    return 'queen';
+    return 'rook';
   }
 
   canMove(to) {
     const from = this.square.coords;
-    if (shareAxis(from, to) || shareDiagonal(from, to)) {
+    if (shareAxis(from, to)) {
       const path = this.board.getPath(from, to);
 
       const piece = path[path.length-1].piece;
@@ -37,5 +36,3 @@ class Queen extends Piece {
   }
 
 }
-
-module.exports = Queen;

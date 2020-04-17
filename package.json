@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js"
+    "start": "tsc && node build/index.js"
   },
   "repository": {
     "type": "git",
@@ -18,8 +18,11 @@
   },
   "homepage": "https://github.com/xaviripo/chess#readme",
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.17.1",
     "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^13.11.1",
+    "@types/socket.io": "^2.1.4"
   }
 }

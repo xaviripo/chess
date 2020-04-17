@@ -1,8 +1,14 @@
-class Square {
+import Board from "./board";
+import Piece from "./pieces/piece";
+import Coords from "./coords";
 
-  constructor(board, piece) {
+export default class Square {
+
+  _board: Board;
+  _piece: Piece;
+
+  constructor(board) {
     this._board = board;
-    this._piece = piece;
   }
 
   get board() {
@@ -17,7 +23,7 @@ class Square {
     return this.coords[1];
   }
 
-  get coords() {
+  get coords(): Coords {
     return this._board.getCoordsBySquare(this);
   }
 
@@ -35,5 +41,3 @@ class Square {
   }
 
 }
-
-module.exports = Square;

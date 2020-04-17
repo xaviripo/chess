@@ -1,9 +1,11 @@
-const Square = require('./square');
-const { King, Queen, Rook, Bishop, Knight, Pawn } = require('./pieces/pieces');
-const { COLS, ROWS, manhattanDistance, shareRow, shareCol, shareDiagonal } = require('./coords');
-const { Teams } = require('./teams');
+import Square from './square';
+import { King, Queen, Rook, Bishop, Knight, Pawn } from './pieces/pieces';
+import Coords, { Col, Row, manhattanDistance, shareRow, shareCol, shareDiagonal, colArr, rowArr } from './coords';
+import Team from './teams';
 
-class Board {
+export default class Board {
+
+  _contents: Map<Col, Map<Row, Square>>;
 
   constructor() {
     this.createSquares();
@@ -21,9 +23,9 @@ class Board {
       const rook = piece.getCastlingRook(to);
       rook.square.piece = null;
       this.getSquareByCoords([
-        COLS[COLS.indexOf(to[0]) + (to[0] > from[0] ? -1 : +1)],
+        colArr[colArr.indexOf(to[0]) + (to[0] > from[0] ? -1 : +1)],
         to[1],
-      ]).piece = rook; 
+      ]).piece = rook;
       rook.virgin = false;
     }
 
@@ -36,9 +38,10 @@ class Board {
 
     // TODO allow choosing which piece to upgrade to
     if (piece instanceof Pawn) {
-      const lastRowIndex = piece.team === Teams.WHITE ? ROWS.length - 1 : 0;
-      if (ROWS.indexOf(to[1]) === lastRowIndex) {
-        this.getSquareByCoords(to).piece = new Queen(piece.team, this.getSquareByCoords(to));
+      const lastRowIndex = piece.team === Team.White ? rowArr.length - 1 : 0;
+      if (rowArr.indexOf(to[1]) === lastRowIndex) {
+        this.getSquareByCoords(to).piece = new Queen(piece.team);
+        this.getSquareByCoords(to).piece.square = this.getSquareByCoords(to);
       }
     }
   }
@@ -47,13 +50,13 @@ class Board {
     this._contents.get(col).set(row, piece);
   }
 
-  getSquareByCoords([ col, row ]) {
+  getSquareByCoords([ col, row ]: Coords): Square {
     return this._contents.get(col).get(row);
   }
 
-  getCoordsBySquare(square) {
-    for (const col of COLS) {
-      for (const row of ROWS) {
+  getCoordsBySquare(square: Square): Coords {
+    for (const col of colArr) {
+      for (const row of rowArr) {
         if (this._contents.get(col).get(row) === square) {
           return [col, row];
         }
@@ -62,20 +65,20 @@ class Board {
     return null;
   }
 
-  get serialized() {
+  get serialized(): String[][] {
     // Transpose the board matrix
-    return ROWS.map(
-      row => COLS.map(
+    return rowArr.map(
+      row => colArr.map(
         col => this.getSquareByCoords([col, row]).serialized
       )
     );
   }
 
   createSquares() {
-    this._contents = new Map();
-    COLS.forEach(col => {
-      this._contents.set(col, new Map());
-      ROWS.forEach(row => {
+    this._contents = new Map<Col, Map<Row, Square>>();
+    colArr.forEach(col => {
+      this._contents.set(col, new Map<Row, Square>());
+      rowArr.forEach(row => {
         this.setSquare([col, row], new Square(this));
       });
     });
@@ -84,36 +87,36 @@ class Board {
   fillSquares() {
 
     // Set the order of the top and bottom row pieces
-    const order = [Rook, Knight, Bishop, King, Queen, Bishop, Knight, Rook];
+    const order = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook];
 
     // Now set the pieces
-    COLS.forEach((col, i) => {
+    colArr.forEach((col, i) => {
 
       // This column's piece
       const ColPiece = order[i];
 
       // White pieces
-      this.getSquareByCoords([col, '1']).piece = new ColPiece(Teams.WHITE);
-      this.getSquareByCoords([col, '2']).piece = new Pawn(Teams.WHITE);
+      this.getSquareByCoords([col, '1']).piece = new ColPiece(Team.White);
+      this.getSquareByCoords([col, '2']).piece = new Pawn(Team.White);
 
       // Black pieces
-      this.getSquareByCoords([col, '7']).piece = new Pawn(Teams.BLACK);
-      this.getSquareByCoords([col, '8']).piece = new ColPiece(Teams.BLACK);
+      this.getSquareByCoords([col, '7']).piece = new Pawn(Team.Black);
+      this.getSquareByCoords([col, '8']).piece = new ColPiece(Team.Black);
 
     });
 
   }
 
   getColPath([ fromCol, fromRow ], [ toCol, toRow ]) {
-    const fromRowIndex = ROWS.indexOf(fromRow);
-    const toRowIndex = ROWS.indexOf(toRow);
+    const fromRowIndex = rowArr.indexOf(fromRow);
+    const toRowIndex = rowArr.indexOf(toRow);
     const getSquareByRow = row => this.getSquareByCoords([fromCol, row]);
     if (fromRowIndex <= toRowIndex) {
-      return ROWS
+      return rowArr
         .slice(fromRowIndex, toRowIndex + 1)
         .map(getSquareByRow);
     } else {
-      return ROWS
+      return rowArr
         .slice(toRowIndex, fromRowIndex + 1)
         .reverse()
         .map(getSquareByRow);
@@ -121,15 +124,15 @@ class Board {
   }
 
   getRowPath([ fromCol, fromRow ], [ toCol, toRow ]) {
-    const fromColIndex = COLS.indexOf(fromCol);
-    const toColIndex = COLS.indexOf(toCol);
+    const fromColIndex = colArr.indexOf(fromCol);
+    const toColIndex = colArr.indexOf(toCol);
     const getSquareByCol = col => this.getSquareByCoords([col, fromRow]);
     if (fromColIndex <= toColIndex) {
-      return COLS
+      return colArr
         .slice(fromColIndex, toColIndex + 1)
         .map(getSquareByCol);
     } else {
-      return COLS
+      return colArr
         .slice(toColIndex, fromColIndex + 1)
         .reverse()
         .map(getSquareByCol);
@@ -137,30 +140,31 @@ class Board {
   }
 
   getDiagonalPath([ fromCol, fromRow ], [ toCol, toRow ]) {
+
+    const
+      fromColIndex = colArr.indexOf(fromCol),
+      toColIndex = colArr.indexOf(toCol),
+      fromRowIndex = colArr.indexOf(fromRow),
+      toRowIndex = colArr.indexOf(toRow);
+
     let cols, rows;
 
     // Obtain cols
-    const fromColIndex = COLS.indexOf(fromCol);
-    const toColIndex = COLS.indexOf(toCol);
-    const getSquareByCol = col => this.getSquareByCoords([col, fromRow]);
     if (fromColIndex <= toColIndex) {
-      cols = COLS
+      cols = colArr
         .slice(fromColIndex, toColIndex + 1);
     } else {
-      cols = COLS
+      cols = colArr
         .slice(toColIndex, fromColIndex + 1)
         .reverse();
     }
 
     // Obtain rows
-    const fromRowIndex = ROWS.indexOf(fromRow);
-    const toRowIndex = ROWS.indexOf(toRow);
-    const getSquareByRow = row => this.getSquareByCoords([fromCol, row]);
     if (fromRowIndex <= toRowIndex) {
-      rows = ROWS
+      rows = rowArr
         .slice(fromRowIndex, toRowIndex + 1);
     } else {
-      rows = ROWS
+      rows = rowArr
         .slice(toRowIndex, fromRowIndex + 1)
         .reverse();
     }
@@ -170,6 +174,7 @@ class Board {
     // Put it all together
     return zip(cols, rows)
       .map(coords => this.getSquareByCoords(coords));
+
   }
 
   getPath(from, to) {
@@ -188,5 +193,3 @@ class Board {
   }
 
 }
-
-module.exports = Board;

@@ -1,28 +1,34 @@
 'use strict';
 
-const { COLS, ROWS } = require('./coords');
-const { Teams } = require('./teams');
-const Board = require('./board');
-const King = require('./pieces/king');
+import Coords, { Col, Row, colArr, rowArr } from './coords';
+import Team from './teams';
+import Board from './board';
+import King from './pieces/king';
+import Player from './player';
 
-class Game {
+export default class Game {
+
+  board: Board;
+  players: Player[];
+  next: Team;
+
   constructor(player0, player1) {
-    player0.team = Teams.WHITE;
+    player0.team = Team.White;
     player0.game = this;
-    player1.team = Teams.BLACK;
+    player1.team = Team.Black;
     player1.game = this;
     this.players = [player0, player1];
-    this.next = Teams.WHITE;
+    this.next = Team.White;
     this.board = new Board();
   }
 
   process(player, data) {
 
-    let response = {};
+    let response: any = {};
 
-    const idxToChessCoords = ([ i, j ]) => [
-      COLS[j],
-      ROWS[i],
+    const idxToChessCoords = ([ i, j ]: [number, number]): Coords => [
+      colArr[j],
+      rowArr[i],
     ];
 
     // Apply the action
@@ -52,7 +58,7 @@ class Game {
    * @param {Array} from 
    * @param {Array} to 
    */
-  processMove(player, from, to) {
+  processMove(player: Player, from: Coords, to: Coords): any {
 
     if (player.game !== this) {
       throw new Error(`This player is not allowed to participate in this game`);
@@ -106,12 +112,12 @@ class Game {
 
     // The move is good
     this.board.move(from, to);
-    this.next = this.next === Teams.WHITE ? Teams.BLACK : Teams.WHITE;
+    this.next = this.next === Team.White ? Team.Black : Team.White;
 
     // Check for win
-    for (const team in Teams) {
-      const kingAlive = [].concat(...COLS.map(
-        col => ROWS.map(
+    for (const team of [Team.White, Team.Black]) {
+      const kingAlive = [].concat(...colArr.map(
+        col => rowArr.map(
           row => this.board.getSquareByCoords([col, row]).piece
         )
       ))
@@ -120,7 +126,7 @@ class Game {
       if (!kingAlive) {
         return {
           success: true,
-          win: (team === Teams.WHITE) ? Teams.BLACK : Teams.WHITE,
+          win: (team === Team.White) ? Team.Black : Team.White,
           data: {
             scene: this.board.serialized,
           }
@@ -138,5 +144,3 @@ class Game {
   }
 
 }
-
-module.exports = { Game };

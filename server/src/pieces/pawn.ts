@@ -1,8 +1,8 @@
-const { Teams } = require('../teams');
-const { ROWS, manhattanDistance, shareCol, shareDiagonal } = require('../coords');
-const Piece = require('./piece');
+import Team from '../teams';
+import { Row, manhattanDistance, shareCol, shareDiagonal, rowArr } from '../coords';
+import Piece from './piece';
 
-class Pawn extends Piece {
+export default class Pawn extends Piece {
 
   get points() {
     return 1;
@@ -12,7 +12,7 @@ class Pawn extends Piece {
     return 'pawn';
   }
 
-  canMove(to) {
+  canMove(to): boolean {
     const from = this.square.coords;
     if (shareCol(from, to)) {
       const path = this.board.getPath(from, to);
@@ -31,10 +31,10 @@ class Pawn extends Piece {
       if (distance !== 2) return false;
       if (!dest.piece) return false;
       if (dest.piece.team === this.team) return false;
-      if (this.team === Teams.WHITE) {
-        if (ROWS.indexOf(from[1]) >= ROWS.indexOf(to[1])) return false;
+      if (this.team === Team.White) {
+        if (rowArr.indexOf(from[1]) >= rowArr.indexOf(to[1])) return false;
       } else {
-        if (ROWS.indexOf(from[1]) <= ROWS.indexOf(to[1])) return false;
+        if (rowArr.indexOf(from[1]) <= rowArr.indexOf(to[1])) return false;
       }
 
       return true;
@@ -44,5 +44,3 @@ class Pawn extends Piece {
   }
 
 }
-
-module.exports = Pawn;

@@ -1,8 +1,8 @@
-const Piece = require('./piece');
-const Rook = require('./rook');
-const { COLS, manhattanDistance, shareRow, shareAxis, shareDiagonal } = require('../coords');
+import Piece from './piece';
+import Rook from './rook';
+import { Col, manhattanDistance, shareRow, shareAxis, shareDiagonal, colArr, rowArr } from '../coords';
 
-class King extends Piece {
+export default class King extends Piece {
 
   get points() {
     return Infinity;
@@ -17,8 +17,8 @@ class King extends Piece {
    * trying to castle with.
    */
   getCastlingRook(to) {
-    const isLong = COLS.indexOf(to[0]) < COLS.indexOf(this.square.col);
-    return this.board.getSquareByCoords([COLS[isLong ? 0 : COLS.length - 1], to[1]]).piece;
+    const isLong = rowArr.indexOf(to[0]) < colArr.indexOf(this.square.col);
+    return this.board.getSquareByCoords([isLong ? 'a' : colArr[colArr.length-1], to[1]]).piece;
   }
 
   canMove(to) {
@@ -58,5 +58,3 @@ class King extends Piece {
   }
 
 }
-
-module.exports = King;

@@ -1,17 +1,17 @@
 import Piece from './piece';
-import { shareDiagonal } from '../coords';
+import Coords, { shareDiagonal } from '../coords';
 
 export default class Bishop extends Piece {
 
-  get points() {
+  get points(): number {
     return 3;
   }
 
-  get name() {
+  get name(): string {
     return 'bishop';
   }
 
-  canMove(to) {
+  canMove(to: Coords): boolean {
     const from = this.square.coords;
     if (shareDiagonal(from, to)) {
       const path = this.board.getPath(from, to);

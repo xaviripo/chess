@@ -1,18 +1,18 @@
 import Team from '../teams';
-import { Row, manhattanDistance, shareCol, shareDiagonal, rowArr } from '../coords';
+import Coords, { Row, manhattanDistance, shareCol, shareDiagonal, rowArr } from '../coords';
 import Piece from './piece';
 
 export default class Pawn extends Piece {
 
-  get points() {
+  get points(): number {
     return 1;
   }
 
-  get name() {
+  get name(): string {
     return 'pawn';
   }
 
-  canMove(to): boolean {
+  canMove(to: Coords): boolean {
     const from = this.square.coords;
     if (shareCol(from, to)) {
       const path = this.board.getPath(from, to);

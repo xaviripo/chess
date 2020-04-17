@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "target": "es5",
-        "types": [ "node", "socket.io" ],
-        "typeRoots": [ "../node_modules/@types" ]
+        "types": [ "node", "socket.io", "express" ],
+        "typeRoots": [ "../node_modules/@types" ],
+        "esModuleInterop": true
     }
 }

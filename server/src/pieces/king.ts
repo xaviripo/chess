@@ -1,14 +1,14 @@
 import Piece from './piece';
 import Rook from './rook';
-import { Col, manhattanDistance, shareRow, shareAxis, shareDiagonal, colArr, rowArr } from '../coords';
+import Coords, { manhattanDistance, shareRow, shareAxis, shareDiagonal, colArr } from '../coords';
 
 export default class King extends Piece {
 
-  get points() {
+  get points(): number {
     return Infinity;
   }
 
-  get name() {
+  get name(): string {
     return 'king';
   }
 
@@ -16,12 +16,12 @@ export default class King extends Piece {
    * Given a destination for the king, return the coords of the rook it's
    * trying to castle with.
    */
-  getCastlingRook(to) {
-    const isLong = rowArr.indexOf(to[0]) < colArr.indexOf(this.square.col);
-    return this.board.getSquareByCoords([isLong ? 'a' : colArr[colArr.length-1], to[1]]).piece;
+  getCastlingRook(to: Coords): Rook {
+    const isLong = colArr.indexOf(to[0]) < colArr.indexOf(this.square.col);
+    return this.board.getSquareByCoords([isLong ? 'a' : colArr[colArr.length-1], to[1]]).piece as Rook;
   }
 
-  canMove(to) {
+  canMove(to: Coords): boolean {
 
     // Normal movement
     const from = this.square.coords;

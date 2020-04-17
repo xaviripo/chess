@@ -1,5 +1,5 @@
 import Piece from './piece';
-import { shareAxis, shareDiagonal } from '../coords';
+import Coords, { shareAxis, shareDiagonal } from '../coords';
 
 export default class Queen extends Piece {
 
@@ -7,11 +7,11 @@ export default class Queen extends Piece {
     return 9;
   }
 
-  get name() {
+  get name(): string {
     return 'queen';
   }
 
-  canMove(to) {
+  canMove(to: Coords): boolean {
     const from = this.square.coords;
     if (shareAxis(from, to) || shareDiagonal(from, to)) {
       const path = this.board.getPath(from, to);

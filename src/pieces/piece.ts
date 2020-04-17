@@ -9,12 +9,12 @@ export default class Piece {
   private _square: Square;
   private _virgin: boolean;
 
-  constructor(team) {
+  constructor(team: Team) {
     this._team = team;
     this._virgin = true;
   }
 
-  get team() {
+  get team(): Team {
     return this._team;
   }
 
@@ -34,11 +34,11 @@ export default class Piece {
     return this._square.board;
   }
 
-  get name(): String {
+  get name(): string {
     throw new Error('Must implement this method');
   }
 
-  get serialized(): String {
+  get serialized(): string {
     return `${this.team.toLowerCase()}_${this.name}`;
   }
 

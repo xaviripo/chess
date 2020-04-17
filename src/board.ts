@@ -12,7 +12,7 @@ export default class Board {
     this.fillSquares();
   }
 
-  move(from, to) {
+  move(from: Coords, to: Coords): void {
     const piece = this.getSquareByCoords(from).piece;
     if (!piece) throw new Error(`There's no piece in coords ${from}`);
 
@@ -46,8 +46,8 @@ export default class Board {
     }
   }
 
-  setSquare([ col, row ], piece) {
-    this._contents.get(col).set(row, piece);
+  setSquare([ col, row ]: Coords, square: Square): void {
+    this._contents.get(col).set(row, square);
   }
 
   getSquareByCoords([ col, row ]: Coords): Square {
@@ -65,7 +65,7 @@ export default class Board {
     return null;
   }
 
-  get serialized(): String[][] {
+  get serialized(): string[][] {
     // Transpose the board matrix
     return rowArr.map(
       row => colArr.map(
@@ -74,7 +74,7 @@ export default class Board {
     );
   }
 
-  createSquares() {
+  createSquares(): void {
     this._contents = new Map<Col, Map<Row, Square>>();
     colArr.forEach(col => {
       this._contents.set(col, new Map<Row, Square>());
@@ -84,7 +84,7 @@ export default class Board {
     });
   }
 
-  fillSquares() {
+  fillSquares(): void {
 
     // Set the order of the top and bottom row pieces
     const order = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook];
@@ -107,7 +107,7 @@ export default class Board {
 
   }
 
-  getColPath([ fromCol, fromRow ], [ toCol, toRow ]) {
+  getColPath([ fromCol, fromRow ]: Coords, [ toCol, toRow ]: Coords): Square[] {
     const fromRowIndex = rowArr.indexOf(fromRow);
     const toRowIndex = rowArr.indexOf(toRow);
     const getSquareByRow = row => this.getSquareByCoords([fromCol, row]);
@@ -123,7 +123,7 @@ export default class Board {
     }
   }
 
-  getRowPath([ fromCol, fromRow ], [ toCol, toRow ]) {
+  getRowPath([ fromCol, fromRow ]: Coords, [ toCol, toRow ]: Coords): Square[] {
     const fromColIndex = colArr.indexOf(fromCol);
     const toColIndex = colArr.indexOf(toCol);
     const getSquareByCol = col => this.getSquareByCoords([col, fromRow]);
@@ -139,13 +139,13 @@ export default class Board {
     }
   }
 
-  getDiagonalPath([ fromCol, fromRow ], [ toCol, toRow ]) {
+  getDiagonalPath([ fromCol, fromRow ]: Coords, [ toCol, toRow ]: Coords): Square[] {
 
     const
       fromColIndex = colArr.indexOf(fromCol),
       toColIndex = colArr.indexOf(toCol),
-      fromRowIndex = colArr.indexOf(fromRow),
-      toRowIndex = colArr.indexOf(toRow);
+      fromRowIndex = rowArr.indexOf(fromRow),
+      toRowIndex = rowArr.indexOf(toRow);
 
     let cols, rows;
 
@@ -177,7 +177,7 @@ export default class Board {
 
   }
 
-  getPath(from, to) {
+  getPath(from: Coords, to: Coords): Square[] {
 
     if (shareCol(from, to)) {
       return this.getColPath(from, to);

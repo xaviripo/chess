@@ -1,25 +1,25 @@
 import Board from "./board";
 import Piece from "./pieces/piece";
-import Coords from "./coords";
+import Coords, { Col, Row } from "./coords";
 
 export default class Square {
 
   _board: Board;
   _piece: Piece;
 
-  constructor(board) {
+  constructor(board: Board) {
     this._board = board;
   }
 
-  get board() {
+  get board(): Board {
     return this._board;
   }
 
-  get col() {
+  get col(): Col {
     return this.coords[0];
   }
 
-  get row() {
+  get row(): Row {
     return this.coords[1];
   }
 
@@ -31,12 +31,12 @@ export default class Square {
     return this._piece;
   }
 
-  set piece(piece) {
+  set piece(piece: Piece) {
     this._piece = piece;
     if (piece) piece.square = this;
   }
 
-  get serialized() {
+  get serialized(): string {
     return this.piece ? this.piece.serialized : ' ';
   }
 

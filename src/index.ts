@@ -11,8 +11,8 @@ Main entry point for the server.
 
 // External
 import * as http from 'http';
-import express from 'express';
-const socketIO = require('socket.io');
+import express, { Application, NextFunction } from 'express';
+import socketIO from 'socket.io';
 
 // Iternal
 import Game from './game';
@@ -31,7 +31,7 @@ const PORT = process.env.PORT || 3001;
 // Setup
 /******************************************************************************/
 
-const app = express();
+const app: Application = express();
 const server = new http.Server(app);
 
 app.get('/socket.io/', (req, res, next) => {
@@ -68,7 +68,7 @@ function getGamePlayerBySocket(socket: Socket): [Game, Player] {
   return [null, null];
 }
 
-const enter = (socket) => {
+const enter = (socket: Socket): void => {
 
   const player = new Player(socket);
 
@@ -100,11 +100,11 @@ const enter = (socket) => {
 
 };
 
-const send = (player: Player, name, data) => {
+const send = (player: Player, name: string, data: any): void => {
   player.socket.emit(name, { ...data, team: player.team });
 }
 
-const disconnectHandler = socket => () => {
+const disconnectHandler = (socket: Socket) => (): void => {
 
   console.log(`${socket.id.substr(socket.id.length-1)}: disconnected`);
 
@@ -129,7 +129,7 @@ const disconnectHandler = socket => () => {
 
 };
 
-const actionHandler = socket => data => {
+const actionHandler = (socket: Socket) => (data: any): void => {
 
   const [ game, player ] = getGamePlayerBySocket(socket);
 
@@ -160,7 +160,7 @@ const actionHandler = socket => data => {
 };
 
 // WebSockets
-io.on('connection', socket => {
+io.on('connection', (socket: Socket): void => {
 
   console.log(`${socket.id.substr(socket.id.length-1)}: connected`);
   sockets.push(socket);

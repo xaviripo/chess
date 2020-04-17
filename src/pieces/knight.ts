@@ -1,17 +1,17 @@
 import Piece from './piece';
-import { manhattanDistance, shareAxis, shareDiagonal } from '../coords';
+import Coords, { manhattanDistance, shareAxis, shareDiagonal } from '../coords';
 
 export default class Knight extends Piece {
 
-  get points() {
+  get points(): number {
     return 3;
   }
 
-  get name() {
+  get name(): string {
     return 'knight';
   }
 
-  canMove(to) {
+  canMove(to: Coords): boolean {
     const from = this.square.coords;
 
     if (!shareAxis(from, to) && !shareDiagonal(from, to)) {

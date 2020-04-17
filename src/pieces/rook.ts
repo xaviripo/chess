@@ -1,17 +1,17 @@
 import Piece from'./piece';
-import { shareAxis } from '../coords';
+import Coords, { shareAxis } from '../coords';
 
 export default class Rook extends Piece {
 
-  get points() {
+  get points(): number {
     return 5;
   }
 
-  get name() {
+  get name(): string {
     return 'rook';
   }
 
-  canMove(to) {
+  canMove(to: Coords): boolean {
     const from = this.square.coords;
     if (shareAxis(from, to)) {
       const path = this.board.getPath(from, to);

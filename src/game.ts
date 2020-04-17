@@ -22,7 +22,7 @@ export default class Game {
     this.board = new Board();
   }
 
-  process(player, data) {
+  process(player: Player, data: any): any {
 
     let response: any = {};
 

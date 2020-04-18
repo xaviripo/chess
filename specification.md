@@ -42,12 +42,18 @@ Some effects can also cause further upgrades to other pieces upon interaction.
 
 The client and server exchange WebSocket messages, each with a *name* and a *payload*.
 
+
+### Data
+
 The general principle is to transmit only the changing information at each turn.
 
 The global structure of the information is as follows:
 
 ```json
 {
+    "team": "white" | "black",
+    "score": 0,
+    "play": true | false,
     "pieces": [
         "a1sb3c4d": {
             "square": {
@@ -95,7 +101,16 @@ The global structure of the information is as follows:
             },
             ...
         ]
-    }
+    },
+    "shop": [
+        {
+            "name": "name of the effect",
+            "data": {
+                ...
+            }
+        },
+        ...
+    ]
 }
 ```
 
@@ -117,3 +132,62 @@ For example, upon moving a piece, a client might send a message like:
 ```
 
 Upon receiving this, the other party understands that the missing fields do not change.
+
+Fields to be removed are marked by an empty `{}`, for example the following would indicate that the piece moved in the previous example is now gone:
+
+```json
+{
+    "pieces": {
+        "a1b2c3d4": {}
+    }
+}
+```
+
+
+### Server to client
+
+#### `waiting`
+
+Don't send anything.
+
+
+#### `started`
+
+Send the full global object with the appropriate initial values.
+
+
+#### `bought`
+
+Send the updated effects, whether on the `effects` list at the root or at the corresponding piece.
+
+
+#### `not bought`
+
+Don't send anything. Only for the client who tried to buy.
+
+
+#### `moved`
+
+Send the updated piece position and any updated stats and effects for any pieces.
+
+
+#### `not moved`
+
+Don't send anything. Only for the client who tried to move.
+
+
+### Client to server
+
+#### `connection`
+
+Don't send anything.
+
+
+#### `buy`
+
+Send the desired effects to buy, whether on the `effects` list at the root or at the corresponding piece.
+
+
+#### `move`
+
+Send the desired move to make. No other pieces or stats are to be updated.

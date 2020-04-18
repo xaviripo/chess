@@ -15,9 +15,10 @@ import express, { Application, NextFunction } from 'express';
 import socketIO from 'socket.io';
 
 // Iternal
-import Game from './game';
-import Player from './player';
+import Game from './model/game';
+import Player from './model/player';
 import { Socket } from 'socket.io';
+import Manager from './manager';
 
 
 /******************************************************************************/
@@ -54,64 +55,14 @@ const io = socketIO(server);
 // Managing messages and state
 /******************************************************************************/
 
-let games: Game[] = [];
-let sockets: Socket[] = [];
-
-function getGamePlayerBySocket(socket: Socket): [Game, Player] {
-  for (const game of games) {
-    for (const player of game.players) {
-      if (player.socket === socket) {
-        return [game, player];
-      }
-    }
-  }
-  return [null, null];
-}
-
-const enter = (socket: Socket): void => {
-
-  const player = new Player(socket);
-
-  const playingSockets = [].concat(...games.map(game => game.players.map(player => player.socket)));
-  const waitingSocket = sockets.find(
-    socket => !playingSockets.includes(socket) && socket !== player.socket
-  );
-
-  // If everybody is already in a game, wait for somebody else to enter
-  if (!waitingSocket) {
-
-    // Send initial data to client
-    player.socket.emit('init', {});
-    return;
-
-  }
-
-  const playerA = new Player(waitingSocket);
-  const playerB = player;
-
-  console.log(`playing game between ${playerA.id.substr(playerA.id.length-1)} and ${playerB.id.substr(playerB.id.length-1)}`);
-
-  let game = new Game(playerA, playerB);
-  games.push(game);
-
-  for (const player of [playerA, playerB]) {
-    send(player, 'accepted', { scene: game.board.serialized });
-  }
-
-};
-
-const send = (player: Player, name: string, data: any): void => {
-  player.socket.emit(name, { ...data, team: player.team });
-}
-
-const disconnectHandler = (socket: Socket) => (): void => {
+const disconnectHandler = (manager: Manager, socket: Socket) => (): void => {
 
   console.log(`${socket.id.substr(socket.id.length-1)}: disconnected`);
 
   // Remove player from list
-  sockets = sockets.filter(s => s !== socket);
+  manager.removeSocket(socket);
 
-  const [ game, player ] = getGamePlayerBySocket(socket);
+  const [ game, player ] = manager.getGamePlayerBySocket(socket);
 
   // If they're not playing any game, just quit.
   if (!game) {
@@ -123,53 +74,55 @@ const disconnectHandler = (socket: Socket) => (): void => {
     .find(otherPlayer => otherPlayer !== player);
 
   // Remove game from list
-  games = games.filter(g => g !== game);
+  manager.removeGame(game);
 
-  enter(otherPlayer.socket);
+  manager.enter(otherPlayer.socket);
 
 };
 
-const actionHandler = (socket: Socket) => (data: any): void => {
+const actionHandler = (manager: Manager, socket: Socket) => (data: any): void => {
 
-  const [ game, player ] = getGamePlayerBySocket(socket);
+  const [ game, player ] = manager.getGamePlayerBySocket(socket);
 
   // This shouldn't happen. But... better safe than sorry
   if (!game) {
-    return;
+    throw new Error(`No game found for ${socket.id.substr(socket.id.length-1)}`);
   }
 
   const response = game.process(player, data);
 
   if (response.win) {
-    games = games.filter(g => g !== game);
+    manager.removeGame(game);
     // Calling enter on one of the two players is enough for both to re-enter
     // the waiting pool and immediately match on each other
     // The losing player will play as white
-    enter(player.socket);
+    manager.enter(player.socket);
     return;
   }
 
   if (response.success) {
     game.players.forEach(
-      player => send(player, response.name, response.data)
+      player => manager.send(player, response.name, response.data)
     );
   } else {
-    send(player, response.name, response.data);
+    manager.send(player, response.name, response.data);
   }
 
 };
+
+const manager = new Manager();
 
 // WebSockets
 io.on('connection', (socket: Socket): void => {
 
   console.log(`${socket.id.substr(socket.id.length-1)}: connected`);
-  sockets.push(socket);
+  manager.addSocket(socket);
 
   // Register ALL handlers here.
   // Handlers should be registered once and globally upon socket connection.
-  socket.on('disconnect', disconnectHandler(socket));
-  socket.on('action', actionHandler(socket));
+  socket.on('disconnect', disconnectHandler(manager, socket));
+  socket.on('action', actionHandler(manager, socket));
 
-  enter(socket);
+  manager.enter(socket);
 
 });

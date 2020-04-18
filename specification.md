@@ -54,63 +54,36 @@ The global structure of the information is as follows:
     "team": "white" | "black",
     "score": 0,
     "play": true | false,
-    "pieces": [
-        "a1sb3c4d": {
+    "pieces": {
+        "<piece_id>": {
             "square": {
                 "col": "a",
                 "row": "1"
             },
             "team": "white" | "black",
             "rank": "king" | "queen" | "rook" | "bishop" | "knight" | "pawn",
-            "effects": [
-                {
-                    "name": "Name of the effect",
-                    "data": {
-                        ...
-                    }
-                }
-            ]
         },
         ...
-    ],
-    "effects" : {
-        "white": [
-            {
-                "name": "Name of the effect",
-                "data": {
-                    ...
-                }
-            },
-            ...
-        ],
-        "black": [
-            {
-                "name": "Name of the effect",
-                "data": {
-                    ...
-                }
-            },
-            ...
-        ],
-        "global": [
-            {
-                "name": "Name of the effect",
-                "data": {
-                    ...
-                }
-            },
-            ...
-        ]
     },
-    "shop": [
-        {
-            "name": "name of the effect",
+    "effects" : {
+        "<active_effect_id>": {
+            "id": <effect_id>,
+            "scope": <piece_id> | "white" | "black" | "all" | ...,
             "data": {
                 ...
             }
         },
         ...
-    ]
+    },
+    "shop": {
+        "<effect_id>": {
+            "name": "Name of the effect",
+            "data": {
+                ...
+            }
+        },
+        ...
+    }
 }
 ```
 
@@ -133,12 +106,12 @@ For example, upon moving a piece, a client might send a message like:
 
 Upon receiving this, the other party understands that the missing fields do not change.
 
-Fields to be removed are marked by an empty `{}`, for example the following would indicate that the piece moved in the previous example is now gone:
+Fields in dictionaries to be removed are marked by sending `null` in their place, for example the following would indicate that the piece moved in the previous example is now gone:
 
 ```json
 {
     "pieces": {
-        "a1b2c3d4": {}
+        "a1b2c3d4": null
     }
 }
 ```

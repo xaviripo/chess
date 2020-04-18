@@ -1,6 +1,7 @@
 import Game from "./model/game";
-import { Socket } from "socket.io";
+import { Socket, Server } from "socket.io";
 import Player from "./model/player";
+import Handler from "./handlers/handler";
 
 export default class Manager {
 
@@ -15,9 +16,30 @@ export default class Manager {
    */
   sockets: Socket[];
 
-  constructor() {
+  /**
+   * Global socket.io server object.
+   */
+  io: Server;
+
+  handlers: {name: string, handler: Handler}[] = [];
+
+  constructor(io: Server) {
     this.games = [];
     this.sockets = [];
+    this.io = io;
+    io.on('connection', (socket: Socket): void => {
+      for (const { name, handler } of this.handlers) {
+        if (name === 'connect') {
+          handler(this, socket, null);
+        } else {
+          socket.on(name, data => handler(this, socket, data));
+        }
+      }
+    });
+  }
+
+  registerHandler(name: string, handler: Handler): void {
+    this.handlers.push({name, handler});
   }
 
   getGamePlayerBySocket(socket: Socket): [Game, Player] {

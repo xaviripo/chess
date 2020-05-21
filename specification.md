@@ -65,9 +65,9 @@ The global structure of the information is as follows:
         },
         ...
     },
-    "effects" : {
+    "activeEffects" : {
         "<active_effect_id>": {
-            "id": <effect_id>,
+            "effectId": <effect_id>,
             "scope": <piece_id> | "white" | "black" | "all" | ...,
             "data": {
                 ...
@@ -75,7 +75,7 @@ The global structure of the information is as follows:
         },
         ...
     },
-    "shop": {
+    "effects": {
         "<effect_id>": {
             "name": "Name of the effect",
             "data": {
@@ -129,24 +129,14 @@ Don't send anything.
 Send the full global object with the appropriate initial values.
 
 
-#### `bought`
+#### `accepted`
 
-Send the updated effects, whether on the `effects` list at the root or at the corresponding piece.
-
-
-#### `not bought`
-
-Don't send anything. Only for the client who tried to buy.
+Send the updated effects or pieces.
 
 
-#### `moved`
+#### `not accepted`
 
-Send the updated piece position and any updated stats and effects for any pieces.
-
-
-#### `not moved`
-
-Don't send anything. Only for the client who tried to move.
+Don't send anything. Only for the client who tried to send the message.
 
 
 ### Client to server
@@ -156,11 +146,10 @@ Don't send anything. Only for the client who tried to move.
 Don't send anything.
 
 
-#### `buy`
+#### `action`
 
-Send the desired effects to buy, whether on the `effects` list at the root or at the corresponding piece.
+Send either a move to make, to complete the turn, or effects to buy. Do not send both at the same time. Multiple effects can be purchased at the same time, as long as they don't collide in some way.
 
+If effects are to be purchased, just add them to the `activeEffects` dictionary with the appropriate casting data (e.g. scope).
 
-#### `move`
-
-Send the desired move to make. No other pieces or stats are to be updated.
+If a move is to be made, just send the desired move to make. No other pieces or stats are to be updated.

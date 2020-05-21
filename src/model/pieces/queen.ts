@@ -1,5 +1,6 @@
 import Piece from './piece';
 import Coords, { shareAxis, shareDiagonal } from '../coords';
+import { PRank } from '../../payload';
 
 export default class Queen extends Piece {
 
@@ -7,7 +8,7 @@ export default class Queen extends Piece {
     return 9;
   }
 
-  get name(): string {
+  get name(): PRank {
     return 'queen';
   }
 

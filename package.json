@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/xaviripo/chess#readme",
   "dependencies": {
+    "@types/lodash": "^4.14.150",
     "express": "^4.17.1",
+    "lodash": "^4.17.15",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {

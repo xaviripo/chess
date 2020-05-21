@@ -1,6 +1,7 @@
 import Piece from './piece';
 import Rook from './rook';
 import Coords, { manhattanDistance, shareRow, shareAxis, shareDiagonal, colArr } from '../coords';
+import { PRank } from '../../payload';
 
 export default class King extends Piece {
 
@@ -8,7 +9,7 @@ export default class King extends Piece {
     return Infinity;
   }
 
-  get name(): string {
+  get name(): PRank {
     return 'king';
   }
 

@@ -1,6 +1,7 @@
 import Board from "./board";
 import Piece from "./pieces/piece";
 import Coords, { Col, Row } from "./coords";
+import { PCoords } from "../payload";
 
 export default class Square {
 
@@ -36,8 +37,11 @@ export default class Square {
     if (piece) piece.square = this;
   }
 
-  get serialized(): string {
-    return this.piece ? this.piece.serialized : ' ';
+  get serialized(): PCoords {
+    return {
+      col: this.col,
+      row: this.row,
+    };
   }
 
 }

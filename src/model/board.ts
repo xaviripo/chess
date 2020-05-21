@@ -2,48 +2,64 @@ import Square from './square';
 import { King, Queen, Rook, Bishop, Knight, Pawn } from './pieces/pieces';
 import Coords, { Col, Row, manhattanDistance, shareRow, shareCol, shareDiagonal, colArr, rowArr } from './coords';
 import Team from './teams';
+import Piece from './pieces/piece';
+import Game from './game';
+import { serialize } from 'v8';
+import Payload from '../payload';
 
 export default class Board {
 
   _contents: Map<Col, Map<Row, Square>>;
+  _pieceIds: string[] = [];
 
   constructor() {
     this.createSquares();
     this.fillSquares();
   }
 
-  move(from: Coords, to: Coords): void {
-    const piece = this.getSquareByCoords(from).piece;
-    if (!piece) throw new Error(`There's no piece in coords ${from}`);
+  /**
+   * Returns a shallow copy of self.
+   */
+  copy(): Board {
+    // ugh, how do I deal with copying pieces over?
+    // maybe its a better idea to keep just one or two Board instances around
+    // and copy over only the data in a standard format (a Payload subsecion?)
+  }
 
-    // Castling
-    if (piece instanceof King && shareRow(from, to) && manhattanDistance(from, to) === 2) {
-      // TODO in the future, refactor this so that piece.canMove already
-      // returns all the pieces to move
-      const rook = piece.getCastlingRook(to);
-      rook.square.piece = null;
-      this.getSquareByCoords([
-        colArr[colArr.indexOf(to[0]) + (to[0] > from[0] ? -1 : +1)],
-        to[1],
-      ]).piece = rook;
-      rook.virgin = false;
-    }
-
-    this.getSquareByCoords(from).piece = null;
-    this.getSquareByCoords(to).piece = piece;
-
-    if (from !== to) {
-      piece.virgin = false;
-    }
-
-    // TODO allow choosing which piece to upgrade to
-    if (piece instanceof Pawn) {
-      const lastRowIndex = piece.team === Team.White ? rowArr.length - 1 : 0;
-      if (rowArr.indexOf(to[1]) === lastRowIndex) {
-        this.getSquareByCoords(to).piece = new Queen(piece.team);
-        this.getSquareByCoords(to).piece.square = this.getSquareByCoords(to);
+  getPieceById(id: string): Piece {
+    for (const col of colArr) {
+      for (const row of rowArr) {
+        const piece = this._contents.get(col).get(row).piece;
+        if (piece && piece.id === id) {
+          return piece;
+        }
       }
     }
+    return null;
+  }
+
+  /**
+   * Given a list of moves, applies them to the board. When a piece doesn't move,
+   * (e.g. because it's attacking and doesn't do enough damage), don't return
+   * that movement. Otherwise, return it.
+   * @param moves 
+   */
+  applyMoves(moves: {from: Coords, to: Coords}[]): {from: Coords, to: Coords}[] {
+
+    const actualMoves = []; 
+
+    for (const { from, to } of moves) {
+      // TODO apply damage calculations and move only if appropriate
+      const fromSquare = this.getSquareByCoords(from);
+      const toSquare = this.getSquareByCoords(to);
+      fromSquare.piece = toSquare.piece;
+      toSquare.piece = null;
+
+      actualMoves.push({from, to});
+    }
+
+    return actualMoves;
+
   }
 
   setSquare([ col, row ]: Coords, square: Square): void {
@@ -65,13 +81,22 @@ export default class Board {
     return null;
   }
 
-  get serialized(): string[][] {
+  get serialized(): Payload {
     // Transpose the board matrix
-    return rowArr.map(
-      row => colArr.map(
-        col => this.getSquareByCoords([col, row]).serialized
-      )
-    );
+    const serialized: Payload = {
+      pieces: {},
+    };
+
+    for (const row of rowArr) {
+      for (const col of colArr) {
+        const square = this.getSquareByCoords([col, row]);
+        if (square.piece) {
+          serialized.pieces[square.piece.id] = square.piece.serialized;
+        }
+      }
+    }
+
+    return serialized;
   }
 
   createSquares(): void {
@@ -96,12 +121,12 @@ export default class Board {
       const ColPiece = order[i];
 
       // White pieces
-      this.getSquareByCoords([col, '1']).piece = new ColPiece(Team.White);
-      this.getSquareByCoords([col, '2']).piece = new Pawn(Team.White);
+      this.getSquareByCoords([col, '1']).piece = new ColPiece(Game.getNextId(this._pieceIds), Team.White);
+      this.getSquareByCoords([col, '2']).piece = new Pawn(Game.getNextId(this._pieceIds), Team.White);
 
       // Black pieces
-      this.getSquareByCoords([col, '7']).piece = new Pawn(Team.Black);
-      this.getSquareByCoords([col, '8']).piece = new ColPiece(Team.Black);
+      this.getSquareByCoords([col, '7']).piece = new Pawn(Game.getNextId(this._pieceIds), Team.Black);
+      this.getSquareByCoords([col, '8']).piece = new ColPiece(Game.getNextId(this._pieceIds), Team.Black);
 
     });
 

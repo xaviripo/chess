@@ -10,9 +10,9 @@ const actionHandler = (manager: Manager, socket: Socket, data: any): void => {
     throw new Error(`No game found for ${socket.id.substr(socket.id.length-1)}`);
   }
 
-  const response = game.process(player, data);
+  const [ message, response ] = game.process(player, data);
 
-  if (response.win) {
+  if (response.winner) {
     manager.removeGame(game);
     // Calling enter on one of the two players is enough for both to re-enter
     // the waiting pool and immediately match on each other
@@ -21,12 +21,19 @@ const actionHandler = (manager: Manager, socket: Socket, data: any): void => {
     return;
   }
 
-  if (response.success) {
-    game.players.forEach(
-      player => manager.send(player, response.name, response.data)
-    );
-  } else {
-    manager.send(player, response.name, response.data);
+  switch (message) {
+    case 'accepted':
+      // Broadcast response
+      for (const player of game.players) {
+        manager.send(player, message, response);
+      }
+      break;
+    case 'not accepted':
+      // Just send the error message to the currently playing client
+      manager.send(player, message, response);
+      break;
+    default:
+      throw new Error('Unmanaged message case received from Game.process()');
   }
 
 };

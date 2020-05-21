@@ -2,6 +2,7 @@ import Game from "./model/game";
 import { Socket, Server } from "socket.io";
 import Player from "./model/player";
 import Handler from "./handlers/handler";
+import * as _ from 'lodash';
 
 export default class Manager {
 
@@ -53,8 +54,9 @@ export default class Manager {
     return [null, null];
   }
 
-  send(player: Player, name: string, data: any): void {
-    player.socket.emit(name, { ...data, team: player.team });
+  send(player: Player, message: string, data: any): void {
+    console.log(`Sending ${message} to ${player} with payload: `, data);
+    player.socket.emit(message, data);
   }
 
   enter(socket: Socket): void {
@@ -70,7 +72,7 @@ export default class Manager {
     if (!waitingSocket) {
 
       // Send initial data to client
-      player.socket.emit('init', {});
+      player.socket.emit('init', null);
       return;
 
     }
@@ -84,7 +86,12 @@ export default class Manager {
     this.addGame(game);
 
     for (const player of [playerA, playerB]) {
-      this.send(player, 'accepted', { scene: game.board.serialized });
+      // We currently send directly the serialized board as we do not
+      // do any effects, but in the future this might have to become
+      // _.merge(game.board.serialized, game.effects) or something like that
+      this.send(player, 'accepted', _.merge(
+        game.board.serialized, {team: player.team}
+      ));
     }
 
   }

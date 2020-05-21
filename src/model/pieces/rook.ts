@@ -1,5 +1,6 @@
 import Piece from'./piece';
 import Coords, { shareAxis } from '../coords';
+import { PRank } from '../../payload';
 
 export default class Rook extends Piece {
 
@@ -7,7 +8,7 @@ export default class Rook extends Piece {
     return 5;
   }
 
-  get name(): string {
+  get name(): PRank {
     return 'rook';
   }
 

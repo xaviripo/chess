@@ -12,7 +12,7 @@ Main entry point for the server.
 // External
 import * as http from 'http';
 import express, { Application } from 'express';
-import socketIO, { Server } from 'socket.io';
+import { Server } from 'socket.io';
 
 // Iternal
 import Manager from './manager';
@@ -39,9 +39,9 @@ app.get('/socket.io/', (req, res, next) => {
   // Allow CORS
   // TODO play a little with these headers to find out if they are all necessary
   res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Request-Method', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET');
-	res.setHeader('Access-Control-Allow-Headers', '*');
+  res.setHeader('Access-Control-Request-Method', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Headers', '*');
   next();
 });
 
@@ -49,7 +49,7 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-const io: Server = socketIO(server);
+const io: Server = new Server(server);
 
 const manager: Manager = new Manager(io);
 

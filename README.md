@@ -14,3 +14,7 @@ Whenever two clients are waiting, they are automatically matched and a game star
 ## Deployment
 
 TODO
+
+## Acknowledgments
+
+The favicon is from [Twemoji](https://twemoji.twitter.com/) and is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)

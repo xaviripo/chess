@@ -40,7 +40,7 @@ app.get('/socket.io/', (req, res, next) => {
   // TODO play a little with these headers to find out if they are all necessary
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Request-Method', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
   res.setHeader('Access-Control-Allow-Headers', '*');
   next();
 });

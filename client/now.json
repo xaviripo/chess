@@ -1,7 +1,0 @@
-{
-  "build": {
-    "env": {
-      "REACT_APP_SERVER": "@react_app_server"
-    }
-  }
-}

@@ -49,7 +49,11 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-const io: Server = new Server(server);
+const io: Server = new Server(server, {
+  cors: {
+    origin: '*',
+  },
+});
 
 const manager: Manager = new Manager(io);
 
